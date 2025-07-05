@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <title>Apple Game</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: url('backp.png') no-repeat center center fixed;
+      background-size: cover;
+      font-family: sans-serif;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #logo {
+      width: 140px;
+      margin: 20px 0;
+      animation: spin 4s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes smoothDrop {
+      0%   { opacity: 0; transform: translateY(-20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    #animationBox {
+      width: 320px;
+      height: 120px;
+      background-color: rgba(255, 255, 255, 0.75);
+      border-radius: 12px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+      padding: 15px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+
+    .img-box {
+      width: 50px;
+      height: 50px;
+      position: relative;
+    }
+
+    .img-box img {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 6px white) drop-shadow(0 0 8px #00ffff);
+    }
+
+    #coefficient {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 22px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 0 0 8px white, 0 0 12px #00c0ff;
+    }
+
+    #idSection {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    #idInput, #idDisplay {
+      width: 280px;
+      height: 40px;
+      font-size: 16px;
+      text-align: center;
+      border-radius: 8px;
+      border: none;
+      background: black;
+      color: white;
+      text-shadow: 0 0 5px white;
+      box-shadow: 0 0 10px white;
+    }
+
+    #idDisplay {
+      display: none;
+      padding: 10px 0;
+    }
+
+    .button-container {
+      position: fixed;
+      bottom: 20px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .button-top {
+      display: flex;
+      gap: 10px;
+    }
+
+    .game-btn {
+      background: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      color: black;
+      user-select: none;
+      text-shadow: 0 0 5px #00c0ff;
+      box-shadow: 0 0 10px white;
+    }
+
+    .game-btn.active {
+      background: #007bff;
+      color: white;
+      text-shadow: 0 0 5px white;
+      box-shadow: 0 0 15px #00c0ff;
+    }
+  </style>
+</head>
+<body>
+
+  <img id="logo" src="logo.png" alt="Logo" />
+
+  <div id="animationBox"></div>
+
+  <div class="button-container">
+    <div id="idSection">
+      <input type="text" id="idInput" placeholder="ID" maxlength="11" />
+      <div id="idDisplay"></div>
+    </div>
+    <div class="button-top">
+      <button class="game-btn" id="nextBtn">KEYINGI</button>
+      <button class="game-btn" id="startBtn">BOSHLASH</button>
+      <button class="game-btn" id="newGameBtn">YANGI OʻYIN</button>
+    </div>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById('startBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const newGameBtn = document.getElementById('newGameBtn');
+    const idInput = document.getElementById('idInput');
+    const idDisplay = document.getElementById('idDisplay');
+    const animationBox = document.getElementById('animationBox');
+
+    const coefficients = ["1.23", "1.54", "1.93", "2.41", "4.02", "6.71", "11.18", "27.97", "69.93", "349.68"];
+    let currentStep = 0;
+
+    function getRandomImagesByCoefficient(coef) {
+      let poiCount = 0, lkjCount = 0;
+      const num = parseFloat(coef);
+
+      if (num >= 1.23 && num <= 2.41) {
+        poiCount = 1; lkjCount = 4;
+      } else if (num >= 4.02 && num <= 11.18) {
+        poiCount = 2; lkjCount = 3;
+      } else if (num >= 27.97 && num <= 69.93) {
+        poiCount = 3; lkjCount = 2;
+      } else if (num === 349.68) {
+        poiCount = 4; lkjCount = 1;
+      }
+
+      const images = Array(poiCount).fill("poi.png").concat(Array(lkjCount).fill("lkj.png"));
+      return images.sort(() => Math.random() - 0.5);
+    }
+
+    function displayImages(images) {
+      animationBox.innerHTML = "";
+
+      images.forEach((src, index) => {
+        const box = document.createElement('div');
+        box.className = "img-box";
+        const img = document.createElement('img');
+        img.src = src;
+        box.appendChild(img);
+        animationBox.appendChild(box);
+
+        if (index === 2) {
+          const coef = document.createElement('div');
+          coef.id = "coefficient";
+          coef.textContent = coefficients[currentStep] + "x";
+          box.appendChild(coef);
+        }
+      });
+
+      animationBox.style.display = "flex";
+
+      // Reset animation fully
+      animationBox.classList.remove("animated");
+      void animationBox.offsetWidth;
+      animationBox.classList.add("animated");
+
+      animationBox.style.animation = "smoothDrop 0.8s ease forwards";
+    }
+
+    function validateID(id) {
+      return id.length >= 9 && id.length <= 11;
+    }
+
+    function handleStart() {
+      const id = idInput.value.trim();
+      if (!validateID(id)) {
+        alert("ID noto‘g‘ri");
+        return;
+      }
+      idInput.style.display = "none";
+      idDisplay.textContent = id;
+      idDisplay.style.display = "block";
+      currentStep = 0;
+      const images = getRandomImagesByCoefficient(coefficients[currentStep]);
+      displayImages(images);
+      highlightButton(startBtn);
+    }
+
+    function handleNext() {
+      if (currentStep < coefficients.length - 1) {
+        currentStep++;
+        const images = getRandomImagesByCoefficient(coefficients[currentStep]);
+        displayImages(images);
+        highlightButton(nextBtn);
+      }
+    }
+
+    function handleNewGame() {
+      currentStep = 0;
+      const images = getRandomImagesByCoefficient(coefficients[currentStep]);
+      displayImages(images);
+      highlightButton(newGameBtn);
+    }
+
+    function highlightButton(btn) {
+      document.querySelectorAll('.game-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    startBtn.addEventListener('click', handleStart);
+    nextBtn.addEventListener('click', handleNext);
+    newGameBtn.addEventListener('click', handleNewGame);
+  </script>
+
+</body>
+</html>
